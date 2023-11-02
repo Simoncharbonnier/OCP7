@@ -27,7 +27,7 @@ class Product
     private ?float $price = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $released_at = null;
+    private ?\DateTime $released_at = null;
 
     public function getId(): ?int
     {
@@ -82,12 +82,12 @@ class Product
         return $this;
     }
 
-    public function getReleasedAt(): ?\DateTimeImmutable
+    public function getReleasedAt(): ?\DateTime
     {
         return $this->released_at;
     }
 
-    public function setReleasedAt(\DateTimeImmutable $released_at): static
+    public function setReleasedAt(\DateTime $released_at): static
     {
         $this->released_at = $released_at;
 

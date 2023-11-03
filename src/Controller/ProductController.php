@@ -12,16 +12,16 @@ use App\Entity\Product;
 
 class ProductController extends AbstractController
 {
-    #[Route('/products', name: 'product', methods: ['GET'])]
+    #[Route('/products', name: 'products', methods: ['GET'])]
     public function getProducts(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
         $products = $productRepository->findAll();
 
         $jsonProducts = $serializer->serialize($products, 'json');
-        return new JsonResponse($jsonProducts, Response::HTTP_OK, [], true);
+        return new JsonResponse($jsonProducts, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
-    #[Route('/products/{id}', name: 'detailProduct', methods: ['GET'])]
+    #[Route('/products/{id}', name: 'product', methods: ['GET'])]
     public function getProductById(Product $product, SerializerInterface $serializer): JsonResponse {
         $jsonProduct = $serializer->serialize($product, 'json');
         return new JsonResponse($jsonProduct, Response::HTTP_OK, ['accept' => 'json'], true);

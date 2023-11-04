@@ -5,12 +5,20 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Product;
 use App\Entity\Client;
 use App\Entity\User;
 
 class AppFixtures extends Fixture
 {
+    private $hasher;
+
+    public function __construct(UserPasswordHasherInterface $hasher)
+    {
+        $this->hasher = $hasher;
+    }
+
     /**
      * Load data in database
      * @param ObjectManager $manager object manager
@@ -41,7 +49,7 @@ class AppFixtures extends Fixture
             $client = new Client();
             $client->setName($clientNames[$i]);
             $client->setMail($clientEmails[$i]);
-            $client->setPassword('secret');
+            $client->setPassword($this->hasher->hashPassword($client, 'secret'));
 
             $clients[] = $client;
             $manager->persist($client);

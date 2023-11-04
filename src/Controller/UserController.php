@@ -12,6 +12,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use App\Repository\UserRepository;
 use App\Entity\User;
 use App\Repository\ClientRepository;
@@ -22,18 +24,25 @@ class UserController extends AbstractController
      * Users list
      * @param UserRepository $userRepository user repository
      * @param SerializerInterface $serializer serializer
+     * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
     #[Route('/users', name: 'users', methods: ['GET'])]
     public function getUsers(
         UserRepository $userRepository,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        TagAwareCacheInterface $cache
     ): JsonResponse
     {
-        $users = $userRepository->findBy(['client' => $this->getUser()]);
+        $cacheId = 'getUsers/'.$this->getUser()->getId();
+        $jsonUsers = $cache->get($cacheId, function(ItemInterface $item) use ($userRepository, $serializer) {
+            $item->tag('usersCache');
 
-        $jsonUsers = $serializer->serialize($users, 'json', ['groups' => 'getUsers']);
+            $users = $userRepository->findBy(['client' => $this->getUser()]);
+            return $serializer->serialize($users, 'json', ['groups' => 'getUsers']);
+        });
+
         return new JsonResponse($jsonUsers, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
@@ -41,20 +50,28 @@ class UserController extends AbstractController
      * User detail
      * @param User $user user
      * @param SerializerInterface $serializer serializer
+     * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
     #[Route('/users/{id}', name: 'user', methods: ['GET'])]
     public function getUserById(
         User $user,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        TagAwareCacheInterface $cache
     ): JsonResponse
     {
         if ($user->getClient() !== $this->getUser()) {
             throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour accéder à ces informations.');
         }
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $cacheId = 'getUserById/'.$user->getId();
+        $jsonUser = $cache->get($cacheId, function(ItemInterface $item) use ($user, $serializer) {
+            $item->tag('usersCache');
+
+            return $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        });
+
         return new JsonResponse($jsonUser, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
@@ -65,6 +82,7 @@ class UserController extends AbstractController
      * @param EntityManagerInterface $em entity manager
      * @param ClientRepository $clientRepository client repository
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
@@ -74,7 +92,8 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $em,
         ClientRepository $clientRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cache
     ): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -85,6 +104,7 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
 
+        $cache->invalidateTags(['usersCache']);
         $em->persist($user);
         $em->flush();
 
@@ -100,6 +120,7 @@ class UserController extends AbstractController
      * @param EntityManagerInterface $em entity manager
      * @param ClientRepository $clientRepository client repository
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
@@ -110,7 +131,8 @@ class UserController extends AbstractController
         User $currentUser,
         EntityManagerInterface $em,
         ClientRepository $clientRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cache
     ): JsonResponse
     {
         if ($currentUser->getClient() !== $this->getUser()) {
@@ -127,6 +149,7 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
 
+        $cache->invalidateTags(['usersCache']);
         $em->persist($updatedUser);
         $em->flush();
 
@@ -137,19 +160,22 @@ class UserController extends AbstractController
      * Delete user
      * @param User $user user
      * @param EntityManagerInterface $em entity manager
+     * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
     #[Route('/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(
         User $user,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TagAwareCacheInterface $cache
     ): JsonResponse
     {
         if ($user->getClient() !== $this->getUser()) {
             throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour supprimer ces informations.');
         }
 
+        $cache->invalidateTags(['usersCache']);
         $em->remove($user);
         $em->flush();
 

@@ -6,6 +6,7 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use App\Entity\Product;
 use App\Entity\Client;
 use App\Entity\User;
@@ -14,9 +15,12 @@ class AppFixtures extends Fixture
 {
     private $hasher;
 
-    public function __construct(UserPasswordHasherInterface $hasher)
+    private $cache;
+
+    public function __construct(UserPasswordHasherInterface $hasher, TagAwareCacheInterface $cache)
     {
         $this->hasher = $hasher;
+        $this->cache = $cache;
     }
 
     /**
@@ -66,6 +70,7 @@ class AppFixtures extends Fixture
             $manager->persist($user);
         }
 
+        $this->cache->invalidateTags(['productsCache', 'usersCache']);
         $manager->flush();
     }
 }

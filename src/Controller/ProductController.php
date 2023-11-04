@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use App\Repository\ProductRepository;
@@ -14,6 +15,7 @@ class ProductController extends AbstractController
 {
     /**
      * Products list
+     * @param Request $request request
      * @param ProductRepository $productRepository product repository
      * @param SerializerInterface $serializer serializer
      *
@@ -21,11 +23,14 @@ class ProductController extends AbstractController
      */
     #[Route('/products', name: 'products', methods: ['GET'])]
     public function getProducts(
+        Request $request,
         ProductRepository $productRepository,
         SerializerInterface $serializer
     ): JsonResponse
     {
-        $products = $productRepository->findAll();
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
+        $products = $productRepository->findAllWithPagination($page, $limit);
 
         $jsonProducts = $serializer->serialize($products, 'json');
         return new JsonResponse($jsonProducts, Response::HTTP_OK, ['accept' => 'json'], true);

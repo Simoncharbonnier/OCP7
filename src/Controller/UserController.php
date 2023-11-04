@@ -31,7 +31,7 @@ class UserController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse
     {
-        $users = $userRepository->findAll();
+        $users = $userRepository->findBy(['client' => $this->getUser()]);
 
         $jsonUsers = $serializer->serialize($users, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUsers, Response::HTTP_OK, ['accept' => 'json'], true);
@@ -50,6 +50,10 @@ class UserController extends AbstractController
         SerializerInterface $serializer
     ): JsonResponse
     {
+        if ($user->getClient() !== $this->getUser()) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour accéder à ces informations.');
+        }
+
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUser, Response::HTTP_OK, ['accept' => 'json'], true);
     }
@@ -74,10 +78,7 @@ class UserController extends AbstractController
     ): JsonResponse
     {
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
-
-        $content = $request->toArray();
-        $clientId = $content['client_id'] ?? -1;
-        $user->setClient($clientRepository->find($clientId));
+        $user->setClient($this->getUser());
 
         $errors = $validator->validate($user);
         if ($errors->count() > 0) {
@@ -112,6 +113,10 @@ class UserController extends AbstractController
         ValidatorInterface $validator
     ): JsonResponse
     {
+        if ($currentUser->getClient() !== $this->getUser()) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour mettre à jour ces informations.');
+        }
+
         $updatedUser = $serializer->deserialize($request->getContent(),
             User::class,
             'json',
@@ -141,6 +146,10 @@ class UserController extends AbstractController
         EntityManagerInterface $em
     ): JsonResponse
     {
+        if ($user->getClient() !== $this->getUser()) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour supprimer ces informations.');
+        }
+
         $em->remove($user);
         $em->flush();
 

@@ -7,8 +7,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,7 +40,8 @@ class UserController extends AbstractController
             $item->tag('usersCache');
 
             $users = $userRepository->findBy(['client' => $this->getUser()]);
-            return $serializer->serialize($users, 'json', ['groups' => 'getUsers']);
+            $context = SerializationContext::create()->setGroups(['getUsers']);
+            return $serializer->serialize($users, 'json', $context);
         });
 
         return new JsonResponse($jsonUsers, Response::HTTP_OK, ['accept' => 'json'], true);
@@ -69,7 +70,8 @@ class UserController extends AbstractController
         $jsonUser = $cache->get($cacheId, function(ItemInterface $item) use ($user, $serializer) {
             $item->tag('usersCache');
 
-            return $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+            $context = SerializationContext::create()->setGroups(['getUsers']);
+            return $serializer->serialize($user, 'json', $context);
         });
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, ['accept' => 'json'], true);
@@ -108,7 +110,8 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ['accept' => 'json'], true);
     }
 
@@ -139,18 +142,27 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour mettre à jour ces informations.');
         }
 
-        $updatedUser = $serializer->deserialize($request->getContent(),
-            User::class,
-            'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
+        $newUser = $serializer->deserialize($request->getContent(), User::class, 'json');
+        if ($newUser->getFirstName() !== null) {
+            $currentUser->setFirstName($newUser->getFirstName());
+        }
+        if ($newUser->getLastName() !== null) {
+            $currentUser->setLastName($newUser->getLastName());
+        }
+        if ($newUser->getMail() !== null) {
+            $currentUser->setMail($newUser->getMail());
+        }
+        if ($newUser->getPhone() !== null) {
+            $currentUser->setPhone($newUser->getPhone());
+        }
 
-        $errors = $validator->validate($updatedUser);
+        $errors = $validator->validate($currentUser);
         if ($errors->count() > 0) {
             throw new HttpException(Response::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
 
         $cache->invalidateTags(['usersCache']);
-        $em->persist($updatedUser);
+        $em->persist($currentUser);
         $em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);

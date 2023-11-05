@@ -12,7 +12,49 @@ nelmio_api_doc:
                     bearerFormat: JWT
         security:
             - Bearer: []
+        paths:
+            /api/login_check:
+              post:
+                tags:
+                  - Login
+                summary: Se connecter et récupérer un token.
+                requestBody:
+                  description: Identifiants
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                        properties:
+                          username:
+                            type: string
+                            example: bouygues@example.com
+                          password:
+                            type: string
+                            example: secret
+                responses:
+                  '200':
+                    description: Retourne un token
+                    content:
+                      application/json:
+                        schema:
+                          type: object
+                          properties:
+                            token:
+                              type: string
+                  '401':
+                    description: Identifiants incorrects
+                    content:
+                      application/json:
+                        schema:
+                          type: object
+                          properties:
+                            code:
+                              type: int
+                              example: 401
+                            message:
+                              type: string
+                              example: Invalid credentials
 
-    areas: # to filter documented areas
+    areas:
         path_patterns:
-            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
+            - ^/api(?!/doc)

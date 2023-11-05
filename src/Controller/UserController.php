@@ -132,7 +132,7 @@ class UserController extends AbstractController
      * @OA\RequestBody(
      *     description="Objet de l'utilisateur qui doit être créé",
      *     required=true,
-     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsersPost"}))
+     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsers"}))
      * )
      * @OA\Response(
      *     response=201,
@@ -192,7 +192,7 @@ class UserController extends AbstractController
      * @OA\RequestBody(
      *     description="Objet de l'utilisateur qui doit être mis à jour",
      *     required=true,
-     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsersPost"}))
+     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsers"}))
      * )
      * @OA\Response(
      *     response=200,

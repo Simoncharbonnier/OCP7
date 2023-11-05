@@ -52,25 +52,25 @@ class User
     private ?Client $client = null;
 
     #[ORM\Column(length: 128)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getUsersPost"])]
     #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
     #[Assert\Length(min: 2, max: 50, minMessage: "Le prénom doit faire au moins {{ limit }} caractères.", maxMessage: "Le prénom ne peut pas faire plus de {{ limit }} caractères.")]
     private ?string $first_name = null;
 
     #[ORM\Column(length: 128)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getUsersPost"])]
     #[Assert\NotBlank(message: "Le nom de famille est obligatoire.")]
     #[Assert\Length(min: 2, max: 50, minMessage: "Le nom de famille doit faire au moins {{ limit }} caractères.", maxMessage: "Le nom de famille ne peut pas faire plus de {{ limit }} caractères.")]
     private ?string $last_name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getUsersPost"])]
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
     #[Assert\Email(message: "L'email est invalide.")]
     private ?string $mail = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getUsersPost"])]
     #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire.")]
     #[Assert\Length(min: 10, max: 30, minMessage: "Le numéro de téléphone doit faire au moins {{ limit }} caractères.", maxMessage: "Le numéro de téléphone ne peut pas faire plus de {{ limit }} caractères.")]
     private ?string $phone = null;

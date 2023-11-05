@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,14 +24,25 @@ use App\Repository\ClientRepository;
 class UserController extends AbstractController
 {
     /**
-     * Users list
+     * Cette méthode permet de récupérer l'ensemble des utilisateurs liés au client authentifié.
+     *
+     * @OA\Tag(name="Users")
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne la liste des utilisateurs liés à un client",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     *
      * @param UserRepository $userRepository user repository
      * @param SerializerInterface $serializer serializer
      * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
-    #[Route('/users', name: 'users', methods: ['GET'])]
+    #[Route('/api/users', name: 'users', methods: ['GET'])]
     public function getUsers(
         UserRepository $userRepository,
         SerializerInterface $serializer,
@@ -48,14 +62,48 @@ class UserController extends AbstractController
     }
 
     /**
-     * User detail
+     * Cette méthode permet de récupérer un utilisateur lié au client authentifié par son id.
+     *
+     * @OA\Tag(name="Users")
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Id de l'utilisateur que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne un utilisateur",
+     *     @OA\JsonContent(
+     *        ref=@Model(type=User::class, groups={"getUsers"})
+     *     )
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="L'utilisateur n'appartient pas au client authentifié",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=403),
+     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour accéder à ces informations.")
+     *     )
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="L'utilisateur n'existe pas",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=404),
+     *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
+     *     )
+     * )
+     *
      * @param User $user user
      * @param SerializerInterface $serializer serializer
      * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
-    #[Route('/users/{id}', name: 'user', methods: ['GET'])]
+    #[Route('/api/users/{id}', name: 'user', methods: ['GET'])]
     public function getUserById(
         User $user,
         SerializerInterface $serializer,
@@ -78,17 +126,39 @@ class UserController extends AbstractController
     }
 
     /**
-     * Create user
+     * Cette méthode permet de créer un utilisateur lié au client authentifié.
+     *
+     * @OA\Tag(name="Users")
+     * @OA\RequestBody(
+     *     description="Objet de l'utilisateur qui doit être créé",
+     *     required=true,
+     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsersPost"}))
+     * )
+     * @OA\Response(
+     *     response=201,
+     *     description="Retourne l'utilisateur créé",
+     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsers"}))
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Requête invalide",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=400),
+     *        @OA\Property(property="message", type="string")
+     *     )
+     * )
+     *
      * @param Request $request request
      * @param SerializerInterface $serializer serializer
      * @param EntityManagerInterface $em entity manager
      * @param ClientRepository $clientRepository client repository
-     * @param ValidatorInterface $validator
+     * @param ValidatorInterface $validator validator
      * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
-    #[Route('/users', name:'createUser', methods: ['POST'])]
+    #[Route('/api/users', name:'createUser', methods: ['POST'])]
     public function createUser(
         Request $request,
         SerializerInterface $serializer,
@@ -116,18 +186,58 @@ class UserController extends AbstractController
     }
 
     /**
-     * Update user
+     * Cette méthode permet de mettre à jour un utilisateur lié au client authentifié.
+     *
+     * @OA\Tag(name="Users")
+     * @OA\RequestBody(
+     *     description="Objet de l'utilisateur qui doit être mis à jour",
+     *     required=true,
+     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsersPost"}))
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne l'utilisateur mis à jour",
+     *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsers"}))
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Requête invalide",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=400),
+     *        @OA\Property(property="message", type="string")
+     *     )
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="L'utilisateur n'appartient pas au client authentifié",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=403),
+     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour mettre à jour ces informations.")
+     *     )
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="L'utilisateur n'existe pas",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=404),
+     *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
+     *     )
+     * )
+     *
      * @param Request $request request
      * @param SerializerInterface $serializer serializer
      * @param User $currentUser current user
      * @param EntityManagerInterface $em entity manager
      * @param ClientRepository $clientRepository client repository
-     * @param ValidatorInterface $validator
+     * @param ValidatorInterface $validator validator
      * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
-    #[Route('/users/{id}', name:'updateUser', methods:['PUT'])]
+    #[Route('/api/users/{id}', name:'updateUser', methods:['PUT'])]
     public function updateUser(
         Request $request,
         SerializerInterface $serializer,
@@ -165,18 +275,51 @@ class UserController extends AbstractController
         $em->persist($currentUser);
         $em->flush();
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonUser = $serializer->serialize($currentUser, 'json', $context);
+        return new JsonResponse($jsonUser, Response::HTTP_OK, ['accept' => 'json'], true);
     }
 
     /**
-     * Delete user
+     * Cette méthode permet de supprimer un utilisateur lié au client authentifié.
+     *
+     * @OA\Tag(name="Users")
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Id de l'utilisateur que l'on veut supprimer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Response(
+     *     response=204,
+     *     description="L'utilisateur a été supprimé"
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="L'utilisateur n'appartient pas au client authentifié",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=403),
+     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour supprimer ces informations.")
+     *     )
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="L'utilisateur n'existe pas",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="status", type="int", example=404),
+     *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
+     *     )
+     * )
+     *
      * @param User $user user
      * @param EntityManagerInterface $em entity manager
      * @param TagAwareCacheInterface $cache cache
      *
      * @return JsonResponse
      */
-    #[Route('/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
+    #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(
         User $user,
         EntityManagerInterface $em,

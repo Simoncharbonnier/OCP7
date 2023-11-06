@@ -16,16 +16,23 @@ Cloner mon projet
 git clone https://github.com/Simoncharbonnier/OCP7.git
 ```
 
-Ajouter les variables d'environnement dans le fichier .env.local
-
-```bash
-DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=14&charset=utf8"
-```
-
 Installer les dépendances avec Composer
 
 ```bash
 composer install
+```
+
+Générer les clés pour l'authentification
+
+```bash
+php bin/console lexik:jwt:generate-keypair
+```
+
+Configurer les variables d'environnement dans le fichier .env ou .env.local
+
+```bash
+DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=14&charset=utf8"
+JWT_PASSPHRASE=
 ```
 
 Créer la base de données
@@ -55,7 +62,7 @@ symfony server:start
 Accéder à la documentation
 
 ```bash
-https://localhost:8000/api/doc
+http://localhost:8000/api/doc
 ```
 
 Et tout devrait fonctionner sans soucis !

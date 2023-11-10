@@ -236,6 +236,12 @@ class UserController extends AbstractController
      * Cette méthode permet de mettre à jour un utilisateur lié au client authentifié.
      *
      * @OA\Tag(name="Users")
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Id de l'utilisateur que l'on veut mettre à jour",
+     *     @OA\Schema(type="string")
+     * )
      * @OA\RequestBody(
      *     description="Objet de l'utilisateur qui doit être mis à jour",
      *     required=true,
@@ -346,7 +352,7 @@ class UserController extends AbstractController
      *     name="id",
      *     in="path",
      *     description="Id de l'utilisateur que l'on veut supprimer",
-     *     @OA\Schema(type="int")
+     *     @OA\Schema(type="string")
      * )
      * @OA\Response(
      *     response=204,

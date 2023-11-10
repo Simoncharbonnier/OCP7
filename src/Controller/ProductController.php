@@ -42,6 +42,15 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class))
      *     )
      * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
+     *     )
+     * )
      *
      * @param Request $request request
      * @param ProductRepository $productRepository product repository
@@ -80,7 +89,7 @@ class ProductController extends AbstractController
      *     name="id",
      *     in="path",
      *     description="Id du produit que l'on veut récupérer",
-     *     @OA\Schema(type="int")
+     *     @OA\Schema(type="string")
      * )
      * @OA\Response(
      *     response=200,
@@ -96,6 +105,15 @@ class ProductController extends AbstractController
      *        type="object",
      *        @OA\Property(property="status", type="int", example=404),
      *        @OA\Property(property="message", type="string", example="Le produit n'existe pas.")
+     *     )
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
      *     )
      * )
      *

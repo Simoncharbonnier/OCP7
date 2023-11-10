@@ -27,6 +27,18 @@ class UserController extends AbstractController
      * Cette méthode permet de récupérer l'ensemble des utilisateurs liés au client authentifié.
      *
      * @OA\Tag(name="Users")
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'utilisateurs que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
      * @OA\Response(
      *     response=200,
      *     description="Retourne la liste des utilisateurs liés à un client",
@@ -35,7 +47,17 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
      *     )
      * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
+     *     )
+     * )
      *
+     * @param Request $request request
      * @param UserRepository $userRepository user repository
      * @param SerializerInterface $serializer serializer
      * @param TagAwareCacheInterface $cache cache
@@ -44,16 +66,20 @@ class UserController extends AbstractController
      */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
     public function getUsers(
+        Request $request,
         UserRepository $userRepository,
         SerializerInterface $serializer,
         TagAwareCacheInterface $cache
     ): JsonResponse
     {
-        $cacheId = 'getUsers/'.$this->getUser()->getId();
-        $jsonUsers = $cache->get($cacheId, function(ItemInterface $item) use ($userRepository, $serializer) {
-            $item->tag('usersCache');
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
 
-            $users = $userRepository->findBy(['client' => $this->getUser()]);
+        $cacheId = 'getUsers/'.$this->getUser()->getId().'-'.$page.'-'.$limit;
+        $jsonUsers = $cache->get($cacheId, function(ItemInterface $item) use ($userRepository, $page, $limit, $serializer) {
+            $item->tag(['usersCache', 'client-'.$this->getUser()->getId().'-cache']);
+
+            $users = $userRepository->findWithPagination($this->getUser()->getId(), $page, $limit);
             $context = SerializationContext::create()->setGroups(['getUsers']);
             return $serializer->serialize($users, 'json', $context);
         });
@@ -69,7 +95,7 @@ class UserController extends AbstractController
      *     name="id",
      *     in="path",
      *     description="Id de l'utilisateur que l'on veut récupérer",
-     *     @OA\Schema(type="int")
+     *     @OA\Schema(type="string")
      * )
      * @OA\Response(
      *     response=200,
@@ -96,6 +122,15 @@ class UserController extends AbstractController
      *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
      *     )
      * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
+     *     )
+     * )
      *
      * @param User $user user
      * @param SerializerInterface $serializer serializer
@@ -116,7 +151,7 @@ class UserController extends AbstractController
 
         $cacheId = 'getUserById/'.$user->getId();
         $jsonUser = $cache->get($cacheId, function(ItemInterface $item) use ($user, $serializer) {
-            $item->tag('usersCache');
+            $item->tag(['usersCache', 'client-'.$this->getUser()->getId().'-cache']);
 
             $context = SerializationContext::create()->setGroups(['getUsers']);
             return $serializer->serialize($user, 'json', $context);
@@ -148,6 +183,15 @@ class UserController extends AbstractController
      *        @OA\Property(property="message", type="string")
      *     )
      * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
+     *     )
+     * )
      *
      * @param Request $request request
      * @param SerializerInterface $serializer serializer
@@ -168,6 +212,10 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ): JsonResponse
     {
+        if (isset($request->toArray()['client'])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, 'Le client ne fait pas parti des données à fournir.');
+        }
+
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setClient($this->getUser());
 
@@ -176,7 +224,7 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
 
-        $cache->invalidateTags(['usersCache']);
+        $cache->invalidateTags(['client-'.$this->getUser()->getId().'-cache']);
         $em->persist($user);
         $em->flush();
 
@@ -226,6 +274,15 @@ class UserController extends AbstractController
      *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
      *     )
      * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
+     *     )
+     * )
      *
      * @param Request $request request
      * @param SerializerInterface $serializer serializer
@@ -252,6 +309,10 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour mettre à jour ces informations.');
         }
 
+        if (isset($request->toArray()['client'])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, 'Le client ne fait pas parti des données à fournir.');
+        }
+
         $newUser = $serializer->deserialize($request->getContent(), User::class, 'json');
         if ($newUser->getFirstName() !== null) {
             $currentUser->setFirstName($newUser->getFirstName());
@@ -271,7 +332,7 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
 
-        $cache->invalidateTags(['usersCache']);
+        $cache->invalidateTags(['client-'.$this->getUser()->getId().'-cache']);
         $em->persist($currentUser);
         $em->flush();
 
@@ -312,6 +373,15 @@ class UserController extends AbstractController
      *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
      *     )
      * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Property(property="code", type="int", example=401),
+     *        @OA\Property(property="message", type="string", example="JWT Token not found.")
+     *     )
+     * )
      *
      * @param User $user user
      * @param EntityManagerInterface $em entity manager
@@ -330,7 +400,7 @@ class UserController extends AbstractController
             throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour supprimer ces informations.');
         }
 
-        $cache->invalidateTags(['usersCache']);
+        $cache->invalidateTags(['client-'.$this->getUser()->getId().'-cache']);
         $em->remove($user);
         $em->flush();
 

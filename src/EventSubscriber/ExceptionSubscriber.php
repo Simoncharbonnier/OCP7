@@ -16,8 +16,16 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         $data = [
             'status' => $exception instanceof HttpException ? $exception->getStatusCode() : 500,
-            'message' => $exception instanceof HttpException && $exception->getStatusCode() === 404 ? "L'identifiant ne correspond à aucun élément." : $exception->getMessage()
+            'message' => $exception->getMessage()
         ];
+
+        if ($exception instanceof HttpException) {
+            if ($exception->getStatusCode() === 404) {
+                $data['message'] = "L'identifiant ne correspond à aucun élément.";
+            } else if ($exception->getStatusCode() === 403) {
+                $data['message'] = "Vous n'avez pas les droits pour réaliser cette requête.";
+            }
+        }
 
         $event->setResponse(new JsonResponse($data));
     }

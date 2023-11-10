@@ -20,6 +20,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 use App\Repository\UserRepository;
 use App\Entity\User;
 use App\Repository\ClientRepository;
+use App\Security\UserVoter;
 
 class UserController extends AbstractController
 {
@@ -41,7 +42,7 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Retourne la liste des utilisateurs liés à un client",
+     *     description="Retourne la liste des utilisateurs liés à un client.",
      *     @OA\JsonContent(
      *        type="array",
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
@@ -49,7 +50,7 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),
@@ -99,32 +100,32 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Retourne un utilisateur",
+     *     description="Retourne un utilisateur.",
      *     @OA\JsonContent(
      *        ref=@Model(type=User::class, groups={"getUsers"})
      *     )
      * )
      * @OA\Response(
      *     response=403,
-     *     description="L'utilisateur n'appartient pas au client authentifié",
+     *     description="L'utilisateur n'appartient pas au client authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=403),
-     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour accéder à ces informations.")
+     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour réaliser cette requête.")
      *     )
      * )
      * @OA\Response(
      *     response=404,
-     *     description="L'utilisateur n'existe pas",
+     *     description="L'utilisateur n'existe pas.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=404),
-     *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
+     *        @OA\Property(property="message", type="string", example="L'identifiant ne correspond à aucun élément.")
      *     )
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),
@@ -145,9 +146,7 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ): JsonResponse
     {
-        if ($user->getClient() !== $this->getUser()) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour accéder à ces informations.');
-        }
+        $this->denyAccessUnlessGranted(UserVoter::VIEW, $user);
 
         $cacheId = 'getUserById/'.$user->getId();
         $jsonUser = $cache->get($cacheId, function(ItemInterface $item) use ($user, $serializer) {
@@ -171,12 +170,12 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=201,
-     *     description="Retourne l'utilisateur créé",
+     *     description="Retourne l'utilisateur créé.",
      *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsers"}))
      * )
      * @OA\Response(
      *     response=400,
-     *     description="Requête invalide",
+     *     description="Requête invalide.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=400),
@@ -185,7 +184,7 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),
@@ -244,12 +243,12 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Retourne l'utilisateur mis à jour",
+     *     description="Retourne l'utilisateur mis à jour.",
      *     @OA\JsonContent(ref=@Model(type=User::class, groups={"getUsers"}))
      * )
      * @OA\Response(
      *     response=400,
-     *     description="Requête invalide",
+     *     description="Requête invalide.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=400),
@@ -258,25 +257,25 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=403,
-     *     description="L'utilisateur n'appartient pas au client authentifié",
+     *     description="L'utilisateur n'appartient pas au client authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=403),
-     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour mettre à jour ces informations.")
+     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour réaliser cette requête.")
      *     )
      * )
      * @OA\Response(
      *     response=404,
-     *     description="L'utilisateur n'existe pas",
+     *     description="L'utilisateur n'existe pas.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=404),
-     *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
+     *        @OA\Property(property="message", type="string", example="L'identifiant ne correspond à aucun élément.")
      *     )
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),
@@ -305,9 +304,7 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ): JsonResponse
     {
-        if ($currentUser->getClient() !== $this->getUser()) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour mettre à jour ces informations.');
-        }
+        $this->denyAccessUnlessGranted(UserVoter::EDIT, $currentUser);
 
         if (isset($request->toArray()['client'])) {
             throw new HttpException(Response::HTTP_BAD_REQUEST, 'Le client ne fait pas parti des données à fournir.');
@@ -353,29 +350,29 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=204,
-     *     description="L'utilisateur a été supprimé"
+     *     description="L'utilisateur a été supprimé."
      * )
      * @OA\Response(
      *     response=403,
-     *     description="L'utilisateur n'appartient pas au client authentifié",
+     *     description="L'utilisateur n'appartient pas au client authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=403),
-     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour supprimer ces informations.")
+     *        @OA\Property(property="message", type="string", example="Vous n'avez pas les droits pour réaliser cette requête.")
      *     )
      * )
      * @OA\Response(
      *     response=404,
-     *     description="L'utilisateur n'existe pas",
+     *     description="L'utilisateur n'existe pas.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=404),
-     *        @OA\Property(property="message", type="string", example="L'utilisateur n'existe pas.")
+     *        @OA\Property(property="message", type="string", example="L'identifiant ne correspond à aucun élément.")
      *     )
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),
@@ -396,9 +393,7 @@ class UserController extends AbstractController
         TagAwareCacheInterface $cache
     ): JsonResponse
     {
-        if ($user->getClient() !== $this->getUser()) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'Vous n\'avez pas les droits pour supprimer ces informations.');
-        }
+        $this->denyAccessUnlessGranted(UserVoter::DELETE, $user);
 
         $cache->invalidateTags(['client-'.$this->getUser()->getId().'-cache']);
         $em->remove($user);

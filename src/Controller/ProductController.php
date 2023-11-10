@@ -36,7 +36,7 @@ class ProductController extends AbstractController
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Retourne la liste des produits",
+     *     description="Retourne la liste des produits.",
      *     @OA\JsonContent(
      *        type="array",
      *        @OA\Items(ref=@Model(type=Product::class))
@@ -44,7 +44,7 @@ class ProductController extends AbstractController
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),
@@ -93,23 +93,23 @@ class ProductController extends AbstractController
      * )
      * @OA\Response(
      *     response=200,
-     *     description="Retourne un produit",
+     *     description="Retourne un produit.",
      *     @OA\JsonContent(
      *        ref=@Model(type=Product::class)
      *     )
      * )
      * @OA\Response(
      *     response=404,
-     *     description="Le produit n'existe pas",
+     *     description="Le produit n'existe pas.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="status", type="int", example=404),
-     *        @OA\Property(property="message", type="string", example="Le produit n'existe pas.")
+     *        @OA\Property(property="message", type="string", example="L'identifiant ne correspond à aucun élément.")
      *     )
      * )
      * @OA\Response(
      *     response=401,
-     *     description="Vous n'avez pas les permissions nécessaires.",
+     *     description="Vous n'êtes pas authentifié.",
      *     @OA\JsonContent(
      *        type="object",
      *        @OA\Property(property="code", type="int", example=401),

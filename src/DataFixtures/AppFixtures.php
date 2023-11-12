@@ -13,6 +13,7 @@ use App\Entity\User;
 
 class AppFixtures extends Fixture
 {
+
     private $hasher;
 
     private $cache;
@@ -33,8 +34,19 @@ class AppFixtures extends Fixture
     {
         $faker = Factory::create('fr_FR');
 
-        $productNames = ['Galaxy Z', 'Galaxy S22', 'Redmi Note 12', 'Redmi 12 Pro', 'iPhone 15', 'iPhone 14'];
-        $productBrands = ['Samsung', 'Apple', 'Xiaomi'];
+        $productNames = [
+            'Galaxy Z',
+            'Galaxy S22',
+            'Redmi Note 12',
+            'Redmi 12 Pro',
+            'iPhone 15',
+            'iPhone 14'
+        ];
+        $productBrands = [
+            'Samsung',
+            'Apple',
+            'Xiaomi'
+        ];
         for ($i = 0; $i <= 19; $i++) {
             $product = new Product();
             $product->setName($productNames[array_rand($productNames)]);
@@ -47,8 +59,20 @@ class AppFixtures extends Fixture
         }
 
         $clients = [];
-        $clientNames = ['Bouygues Telecom', 'Orange', 'SFR', 'Free', 'La Poste'];
-        $clientEmails = ['bouygues@example.com', 'orange@example.com', 'sfr@example.com', 'free@example.com', 'laposte@example.com'];
+        $clientNames = [
+            'Bouygues Telecom',
+            'Orange',
+            'SFR',
+            'Free',
+            'La Poste'
+        ];
+        $clientEmails = [
+            'bouygues@example.com',
+            'orange@example.com',
+            'sfr@example.com',
+            'free@example.com',
+            'laposte@example.com'
+        ];
         for ($i = 0; $i <= 4; $i++) {
             $client = new Client();
             $client->setName($clientNames[$i]);

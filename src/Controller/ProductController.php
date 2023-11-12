@@ -65,8 +65,7 @@ class ProductController extends AbstractController
         ProductRepository $productRepository,
         SerializerInterface $serializer,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
 
@@ -128,8 +127,7 @@ class ProductController extends AbstractController
         Product $product,
         SerializerInterface $serializer,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $cacheId = 'getProductById/'.$product->getId();
         $jsonProduct = $cache->get($cacheId, function(ItemInterface $item) use ($product, $serializer) {
             $item->tag('productsCache');

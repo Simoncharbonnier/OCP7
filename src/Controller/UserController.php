@@ -71,8 +71,7 @@ class UserController extends AbstractController
         UserRepository $userRepository,
         SerializerInterface $serializer,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 3);
 
@@ -144,8 +143,7 @@ class UserController extends AbstractController
         User $user,
         SerializerInterface $serializer,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->denyAccessUnlessGranted(UserVoter::VIEW, $user);
 
         $cacheId = 'getUserById/'.$user->getId();
@@ -209,8 +207,7 @@ class UserController extends AbstractController
         ClientRepository $clientRepository,
         ValidatorInterface $validator,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         if (isset($request->toArray()['client'])) {
             throw new HttpException(Response::HTTP_BAD_REQUEST, 'Le client ne fait pas parti des données à fournir.');
         }
@@ -308,8 +305,7 @@ class UserController extends AbstractController
         ClientRepository $clientRepository,
         ValidatorInterface $validator,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->denyAccessUnlessGranted(UserVoter::EDIT, $currentUser);
 
         if (isset($request->toArray()['client'])) {
@@ -397,8 +393,7 @@ class UserController extends AbstractController
         User $user,
         EntityManagerInterface $em,
         TagAwareCacheInterface $cache
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->denyAccessUnlessGranted(UserVoter::DELETE, $user);
 
         $cache->invalidateTags(['client-'.$this->getUser()->getId().'-cache']);

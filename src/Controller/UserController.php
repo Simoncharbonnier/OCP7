@@ -204,7 +204,6 @@ class UserController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $em,
-        ClientRepository $clientRepository,
         ValidatorInterface $validator,
         TagAwareCacheInterface $cache
     ): JsonResponse {

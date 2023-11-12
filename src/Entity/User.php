@@ -44,35 +44,53 @@ class User
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(["getUsers"])]
+    /**
+     * @var ?int $id user id
+     */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank(message: "Le client est obligatoire.")]
+    /**
+     * @var ?Client $client user client
+     */
     private ?Client $client = null;
 
     #[ORM\Column(length: 128)]
     #[Groups(["getUsers"])]
     #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
     #[Assert\Length(min: 2, max: 50, minMessage: "Le prénom doit faire au moins {{ limit }} caractères.", maxMessage: "Le prénom ne peut pas faire plus de {{ limit }} caractères.")]
+    /**
+     * @var ?string $first_name user first name
+     */
     private ?string $first_name = null;
 
     #[ORM\Column(length: 128)]
     #[Groups(["getUsers"])]
     #[Assert\NotBlank(message: "Le nom de famille est obligatoire.")]
     #[Assert\Length(min: 2, max: 50, minMessage: "Le nom de famille doit faire au moins {{ limit }} caractères.", maxMessage: "Le nom de famille ne peut pas faire plus de {{ limit }} caractères.")]
+    /**
+     * @var ?string $last_name user last name
+     */
     private ?string $last_name = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers"])]
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
     #[Assert\Email(message: "L'email est invalide.")]
+    /**
+     * @var ?string $mail user mail
+     */
     private ?string $mail = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getUsers"])]
     #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire.")]
     #[Assert\Length(min: 10, max: 30, minMessage: "Le numéro de téléphone doit faire au moins {{ limit }} caractères.", maxMessage: "Le numéro de téléphone ne peut pas faire plus de {{ limit }} caractères.")]
+    /**
+     * @var ?string $phone user phone
+     */
     private ?string $phone = null;
 
     public function getId(): ?int

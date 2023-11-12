@@ -22,21 +22,39 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /**
+     * @var ?int $id product id
+     */
     private ?int $id = null;
 
     #[ORM\Column(length: 128)]
+    /**
+     * @var ?string $name product name
+     */
     private ?string $name = null;
 
     #[ORM\Column(length: 128)]
+    /**
+     * @var ?string $brand product brand
+     */
     private ?string $brand = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    /**
+     * @var ?string $description product description
+     */
     private ?string $description = null;
 
     #[ORM\Column]
+    /**
+     * @var ?float $price product price
+     */
     private ?float $price = null;
 
     #[ORM\Column]
+    /**
+     * @var ?\DateTime $released_at product release date
+     */
     private ?\DateTime $released_at = null;
 
     public function getId(): ?int

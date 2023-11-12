@@ -15,18 +15,33 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /**
+     * @var ?int $id client id
+     */
     private ?int $id = null;
 
     #[ORM\Column(length: 128)]
+    /**
+     * @var ?string $name client name
+     */
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    /**
+     * @var ?string $mail client mail
+     */
     private ?string $mail = null;
 
     #[ORM\Column(length: 255)]
+    /**
+     * @var ?string $password client password
+     */
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: User::class, orphanRemoval: true)]
+    /**
+     * @var Collection $users client users
+     */
     private Collection $users;
 
     public function __construct()

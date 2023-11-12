@@ -14,8 +14,14 @@ use App\Entity\User;
 class AppFixtures extends Fixture
 {
 
+    /**
+     * @var $hasher password hasher
+     */
     private $hasher;
 
+    /**
+     * @var $cache app cache
+     */
     private $cache;
 
     public function __construct(UserPasswordHasherInterface $hasher, TagAwareCacheInterface $cache)

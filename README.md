@@ -65,6 +65,15 @@ Accéder à la documentation
 http://localhost:8000/api/doc
 ```
 
+Se connecter avec les identifiants suivants
+
+```bash
+{
+  "username": "bouygues@example.com",
+  "password": "secret"
+}
+```
+
 Et tout devrait fonctionner sans soucis !
 
 

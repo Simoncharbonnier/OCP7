@@ -68,18 +68,14 @@ class AppFixtures extends Fixture
         $clientNames = [
             'Bouygues Telecom',
             'Orange',
-            'SFR',
-            'Free',
-            'La Poste'
+            'SFR'
         ];
         $clientEmails = [
             'bouygues@example.com',
             'orange@example.com',
-            'sfr@example.com',
-            'free@example.com',
-            'laposte@example.com'
+            'sfr@example.com'
         ];
-        for ($i = 0; $i <= 4; $i++) {
+        for ($i = 0; $i <= 2; $i++) {
             $client = new Client();
             $client->setName($clientNames[$i]);
             $client->setMail($clientEmails[$i]);
